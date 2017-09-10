@@ -1,0 +1,179 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "ECS cluster for a model in default vpc",
+
+  "Parameters": {
+    "ClusterSize": {
+      "Description": "Number of instances in the cluster",
+      "Type": "Number",
+      "Default": "1"
+    },
+
+    "ClusterInstanceType": {
+      "Description": "Cluster Instance Type",
+      "Type": "String",
+      "Default": "t2.small"
+    },
+
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+
+    "DBSecurityGroup": {
+      "Description": "Security Group of DB",
+      "Type": "String"
+    },
+
+    "AMIImageId" : {
+      "Description": "AMI image id to run in the instances",
+      "Type": "String"
+    },
+
+    "ImageECRId": {
+      "Description": "Image that will run the application",
+      "Type": "String"
+    },
+
+    "DBHost": {
+      "Description": "DB host that the application will connect to",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "ServiceELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "AvailabilityZones": {"Fn::GetAZs": ""},
+        "Listeners": [{
+          "LoadBalancerPort": "80",
+          "InstancePort": "8080",
+          "Protocol": "HTTP"
+        }],
+        "HealthCheck": {
+          "HealthyThreshold": "2",
+          "Interval": "60",
+          "Target": "HTTP:8080/",
+          "Timeout": "30",
+          "UnhealthyThreshold": "10"
+        }
+      }
+    },
+
+    "ClusterSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow inbound access to Cluster (8080, 5432, 22)",
+        "SecurityGroupIngress": [{
+          "IpProtocol": "tcp",
+          "FromPort": "8080",
+          "ToPort": "8080",
+          "CidrIp": "0.0.0.0/0"
+        }, {
+          "IpProtocol": "tcp",
+          "FromPort": "5000",
+          "ToPort": "5000",
+          "CidrIp": "0.0.0.0/0"
+        },{
+          "IpProtocol": "tcp",
+          "FromPort": "5432",
+          "ToPort": "5432",
+          "CidrIp": "0.0.0.0/0"
+        }, {
+          "IpProtocol": "tcp",
+          "FromPort": "22",
+          "ToPort": "22",
+          "CidrIp": "0.0.0.0/0"
+        }]
+      }
+    },
+
+    "ClusterAutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AvailabilityZones": {"Fn::GetAZs": ""},
+        "LaunchConfigurationName": {"Ref": "ClusterLaunchConfig"},
+        "MinSize": "0",
+        "MaxSize": "10",
+        "DesiredCapacity": {"Ref": "ClusterSize"},
+        "Tags": [{
+          "Key": "Name",
+          "Value": {"Fn::Join": ["", ["ecs-", {"Ref": "AWS::StackName"}]]},
+          "PropagateAtLaunch": true
+        }
+        ]
+      }
+    },
+
+    "ClusterLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": {"Ref": "AMIImageId"},
+        "InstanceType": {"Ref": "ClusterInstanceType"},
+        "IamInstanceProfile": "ecsInstanceRole",
+        "KeyName": {"Ref": "KeyName"},
+        "SecurityGroups": [ { "Ref" : "DBSecurityGroup" }, { "Ref" : "ClusterSecurityGroup" } ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n",
+                "echo ECS_CLUSTER=", {"Ref": "Cluster"}, " >> /etc/ecs/ecs.config\n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+
+    "Cluster": {
+      "Type": "AWS::ECS::Cluster"
+    },
+
+    "ServiceTaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Name": {"Fn::Join": ["", ["service-", {"Ref": "AWS::StackName"}]]},
+            "Image": {"Ref": "ImageECRId"},
+            "Memory": 250,
+            "Cpu": 256,
+            "PortMappings": [{
+              "HostPort": 8080,
+              "ContainerPort": 8080}, {
+              "HostPort": 5000,
+              "ContainerPort": 5000}],
+            "Environment": [{"Name": "DB_HOST", "Value": {"Ref": "DBHost"}}],
+            "Essential": true
+          }]
+      }
+    },
+
+    "Service": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "Cluster": {"Ref": "Cluster"},
+        "DesiredCount": {"Ref": "ClusterSize"},
+        "LoadBalancers": [{
+          "ContainerName": {"Fn::Join": ["", ["service-", {"Ref": "AWS::StackName"}]]},
+          "ContainerPort": 8080,
+          "LoadBalancerName": {"Ref": "ServiceELB"}}
+        ],
+        "Role": "ecsServiceRole",
+        "TaskDefinition": {"Ref": "ServiceTaskDefinition"}
+      }
+    }
+  },
+  "Outputs": {
+    "URL": {
+      "Description": "ELB Endpoint",
+      "Value": {
+        "Fn::Join": ["", ["http://", {"Fn::GetAtt": ["ServiceELB", "DNSName"]}]]
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "RDS with postgres9.6 in default vpc",
+
+  "Parameters" : {
+
+    "DBName": {
+      "Type": "String"
+    },
+
+    "DBUsername": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+
+    "DBPassword": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+
+    "DBClass" : {
+      "Default" : "db.t2.micro",
+      "Type": "String"
+    },
+
+    "DBAllocatedStorage" : {
+      "Default": "5",
+      "Type": "String"
+    }
+  },
+
+  "Resources" : {
+
+    "DB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+        "DBName" : { "Ref" : "DBName" },
+        "DBInstanceIdentifier": {"Ref": "DBName"},
+        "AllocatedStorage" : { "Ref" : "DBAllocatedStorage" },
+        "DBInstanceClass" : { "Ref" : "DBClass" },
+        "Engine" : "postgres",
+        "EngineVersion" : "9.6",
+        "MasterUsername" : { "Ref" : "DBUsername" } ,
+        "MasterUserPassword" : { "Ref" : "DBPassword" }
+      }
+    }
+  }
+}
