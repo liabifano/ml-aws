@@ -1,5 +1,8 @@
 # Predictive models in AWS
 
+[![Build Status](http://img.shields.io/travis/liabifano/ml-aws.svg?style=flat)](https://travis-ci.org/liabifano/ml-aws)
+
+
 The goal of this project is to be some kind of tutorial to spin a predictive model as a service in a Amazon Web Services,
 the stack allows have multiple version of the same model which is great to retrain and do A/B test.
 In the end of [`Step by step`](#step-by-step) you'll have a endpoint of cluster of machines in aws to run the model and 

@@ -1,0 +1,15 @@
+language: python3
+
+sudo: required
+
+dist: trusty
+
+before_install:
+  - docker --version
+
+script:
+  - docker build -t modelapp . # it will run the tests
+  - docker run -d -p 8080:8080 modelapp
+  - docker kill $(docker ps -q)
+
+after_failure: cat docker_daemon.log

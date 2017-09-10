@@ -12,7 +12,7 @@ COPY VERSION VERSION
 # create virtualenv
 RUN bash /modelapp/bootstrap-python-env.sh
 
-# tests
+# run tests
 RUN find . | grep -E "(__pycache__|\.pyc$)" | xargs rm -rf && \
     . /modelapp-python-env/bin/activate && \
     cd modelapp/ && py.test
