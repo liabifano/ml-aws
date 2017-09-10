@@ -100,8 +100,10 @@ ENV/
 
 # Personal and env
 notes
-/secrets/
+*.pem
+env-variables.sh
 /modelapp-python-env/
+*.gdraw
 
 # IDE
 .idea/*

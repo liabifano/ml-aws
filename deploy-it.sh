@@ -22,7 +22,7 @@ echo "--------------------------------------------------------------------------
 echo "This script will: "
 echo "  1. Check if there is already a docker image or a stack with the current version"
 echo "  2. Build a docker image with all the dependencies of your application"
-echo "  3. Push this image created to the repository previously in bootstrap.sh"
+echo "  3. Push this image created to the repository previously created in bootstrap.sh"
 echo "  4. Create a stack with a cluster of machines running the service specified in the pushed docker image"
 echo "--------------------------------------------------------------------------------------------------------"
 
