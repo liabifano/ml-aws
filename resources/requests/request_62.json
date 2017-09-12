@@ -1,0 +1,10 @@
+{
+    "id": 62,
+    "request_time": "2017-03-04 00:00:00",
+    "inputs": {
+        "sepal_length": 6.0,
+        "sepal_width": 2.2,
+        "pental_length": 4.0,
+        "pental_width": 1.0
+    }
+}

@@ -28,31 +28,34 @@ class TestEndpoints(unittest.TestCase):
 
     def test_endpoints(self):
         expected_result = {'GET': {'version': '/version/',
-                                   'scores': '/output/<client-id>/',
-                                   'inputs': '/inputs/<client-id>/'},
+                                   'scores': '/output/<id>/',
+                                   'inputs': '/inputs/<id>/'},
                            'POST': {'score': '/run/'}}
         result = json.loads(self.client.get('/endpoints/').get_data(as_text=True))
         assert expected_result == result
 
     def test_output(self):
         output = Outputs(run_id=1,
-                         client_id='1',
+                         id='1',
                          finished_at=datetime(2017, 1, 1),
-                         output=3,
+                         output='1',
                          code_version='v')
 
         db.session.add(output)
         db.session.commit()
-        expected_result = [{'client_id': '1',
+        expected_result = [{'id': '1',
                             'finished_at': 'Sun, 01 Jan 2017 00:00:00 GMT',
-                            'output': 3,
+                            'output': '1',
                             'run_id': 1}]
         result = json.loads(self.client.get('/output/1/').get_data(as_text=True))
         assert expected_result == result
 
     def test_run(self):
-        request = json.dumps(dict(client_id='1',
+        request = json.dumps(dict(id='1',
                                   request_time='2017-07-27 14:09:16.595260',
-                                  inputs=dict(a=1, b=2)))
+                                  inputs=dict(sepal_length=1.0,
+                                              sepal_width=2.0,
+                                              pental_length=3.0,
+                                              pental_width=4.0)))
         result = self.client.post('/run/', data=request, content_type='application/json')
         assert result.status_code == 200

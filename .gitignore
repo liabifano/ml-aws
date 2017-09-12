@@ -104,6 +104,7 @@ notes
 env-variables.sh
 /modelapp-python-env/
 *.gdraw
+*.ipynb
 
 # IDE
 .idea/*

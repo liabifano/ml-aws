@@ -13,14 +13,16 @@ def serialize(d, keys):
 class Inputs(db.Model):
     version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, "../../../..")), 'VERSION')).read()
     __tablename__ = 'inputs_{}'.format(version_model)
-    __table_args__ = (schema.UniqueConstraint('client_id', 'request_time', name='client_id_request_time'),)
+    __table_args__ = (schema.UniqueConstraint('id', 'request_time', name='id_request_time'),)
 
     run_id = db.Column(db.Integer(), primary_key=True, nullable=False, autoincrement=True)
-    client_id = db.Column(db.String, nullable=False)
+    id = db.Column(db.String, nullable=False)
     request_time = db.Column(db.DateTime, nullable=False)
 
-    a = db.Column(db.Integer(), nullable=True)
-    b = db.Column(db.Integer(), nullable=True)
+    sepal_length = db.Column(db.Float(), nullable=True)
+    sepal_width = db.Column(db.Float(), nullable=True)
+    pental_length = db.Column(db.Float(), nullable=True)
+    pental_width = db.Column(db.Float(), nullable=True)
 
     output = db.relationship('Outputs', backref='input', lazy='dynamic')
 
@@ -35,9 +37,9 @@ class Outputs(db.Model):
     run_id = db.Column(db.Integer,
                        db.ForeignKey('inputs_{}.run_id'.format(version_model)),
                        primary_key=True)
-    client_id = db.Column(db.String, nullable=False)
+    id = db.Column(db.String, nullable=False)
     finished_at = db.Column(db.DateTime, nullable=False)
-    output = db.Column(db.Integer, nullable=False)
+    output = db.Column(db.String, nullable=False)
     code_version = db.Column(db.String, nullable=False)
 
     def __repr__(self):

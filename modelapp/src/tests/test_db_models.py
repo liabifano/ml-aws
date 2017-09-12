@@ -16,20 +16,22 @@ class TestModels(unittest.TestCase):
         db.drop_all()
 
     def test_inputs(self):
-        input = Inputs(client_id='1',
+        input = Inputs(id='1',
                        request_time=datetime(2017, 1, 1),
-                       a=1,
-                       b=2)
+                       sepal_length=1.0,
+                       sepal_width=2.0,
+                       pental_length=3.0,
+                       pental_width=4.0)
 
         db.session.add(input)
         db.session.commit()
 
-        queried = Inputs.query.filter_by(client_id='1').one()
+        queried = Inputs.query.filter_by(id='1').one()
         assert queried is not None
 
     def test_outputs(self):
         output = Outputs(run_id=1,
-                         client_id='1',
+                         id='1',
                          finished_at=datetime(2017, 1, 1),
                          output=3,
                          code_version='v')
@@ -37,5 +39,5 @@ class TestModels(unittest.TestCase):
         db.session.add(output)
         db.session.commit()
 
-        queried = Outputs.query.filter_by(client_id='1').one()
+        queried = Outputs.query.filter_by(id='1').one()
         assert queried is not None

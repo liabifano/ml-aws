@@ -1,9 +1,11 @@
 import pandas as pd
 
 SCHEMA_INPUTS = {'request_time': 'datetime',
-                 'client_id': 'str',
-                 'a': 'int',
-                 'b': 'int'}
+                 'id': 'str',
+                 'sepal_length': 'float',
+                 'sepal_width': 'float',
+                 'pental_length': 'float',
+                 'pental_width': 'float'}
 
 
 def coerce_cols_types(col, type):

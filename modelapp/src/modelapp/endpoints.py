@@ -30,16 +30,16 @@ def version():
 @jsonapi
 def endpoints():
     return {'GET': {'version': '/version/',
-                    'scores': '/output/<client-id>/',
-                    'inputs': '/inputs/<client-id>/'},
+                    'scores': '/output/<id>/',
+                    'inputs': '/inputs/<id>/'},
             'POST': {'score': '/run/'}}
 
 
-@mod.route('/output/<string:client_id>/', methods=['GET'])
+@mod.route('/output/<string:id>/', methods=['GET'])
 @jsonapi
-def output(client_id):
-    keys_to_show = ['run_id', 'client_id', 'finished_at', 'output', 'version']
-    outputs = Outputs.query.filter(Outputs.client_id == client_id).all()
+def output(id):
+    keys_to_show = ['run_id', 'id', 'finished_at', 'output', 'version']
+    outputs = Outputs.query.filter(Outputs.id == id).all()
 
     return [serialize(o, keys_to_show) for o in outputs]
 
@@ -53,10 +53,10 @@ def run():
         df = adapters.json_to_df(request_json)
         score = model.predict(df)
     except:
-        RuntimeError('Not able to score to {}'.format(request_json['client_id']))
+        RuntimeError('Not able to score to {}'.format(request_json['id']))
 
     inputs = Inputs(**df.to_dict('records')[0])
-    outputs = Outputs(client_id=request_json['client_id'],
+    outputs = Outputs(id=request_json['id'],
                       finished_at=datetime.utcnow(),
                       output=score,
                       code_version=pkg_resources.require('modelapp')[0].version)
