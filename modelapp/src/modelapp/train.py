@@ -1,13 +1,6 @@
-"""
-Train
-Usage: train.py [--prod | --test]
-
-"""
-
 from sklearn import datasets
 from sklearn import svm
 from sklearn.externals import joblib
-from docopt import docopt
 
 from modelapp import config
 

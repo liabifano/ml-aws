@@ -3,20 +3,21 @@
 [![Build Status](http://img.shields.io/travis/liabifano/ml-aws.svg?style=flat)](https://travis-ci.org/liabifano/ml-aws)
 
 
-The goal of this project is to be some kind of tutorial to spin a predictive model as a service in a Amazon Web Services,
-the stack allows have multiple version of the same model which is great to retrain and do A/B test.
-In the end of [`Step by step`](#step-by-step) you'll have a endpoint of cluster of machines in aws to run the model and 
+The goal of this project is to be some kind of tutorial to get up a cluster in AWS to run a predictive model as a REST service. 
+Besides that, the stack of this tutorial allows have multiple version of the model which is great to retrain and do A/B test.
+In the end of [`Step by step`](#step-by-step) you'll have a endpoint of cluster of machines in AWS to run the model and 
 access the results. The request's inputs and model's outputs will be also available in a postgres database. 
 
 The entire stack is configured to run according to the amazon's free tier rules, so if still have free tier, you won't be charged. 
 
 The scripts will use mainly:
- - AWS command line to communicate with AWS application and specify the requeried infro to run our application `modelapp`
+ - AWS command line client to communicate with AWS application to run our application `modelapp`
  - Docker command line to build images that will run inside each machine of the cluster 
  - `jq` to parse json outputs from `awscli`
 
-The web framework in this tutorial is Flask, but could be other as long it respects the contracts with the database and endpoints. 
-It means, changing the web framework or even the programming language will not change the way that the service will be deployed.
+The web framework in this tutorial is Flask and the model running is a simple model using `iris` dataset, 
+but could be other as long it respects the contracts with the database and endpoints. 
+That means, changing the web framework and model or even the programming language will not change the way that the service is deployed.
 
 
 > **NOTE**: The scripts are optimized to work with MacOS and if you hold a Linux or Windows, some modifications will be suggested.
@@ -24,7 +25,7 @@ It means, changing the web framework or even the programming language will not c
 ## Overview of AWS stack
 ![stack](/resources/images/StackLayout.png)
 
-The stack for each model version contains:
+Each model version has a stack that contains:
 - Elastic Load Balancer to distribute the networking load among the machines inside the cluster
 - Security group associated with the cluster
 - Autoscaling group to scale the number of instances automatically 
@@ -33,18 +34,23 @@ The stack for each model version contains:
 For each model version is created 2 tables in the database, one with the inputs of the requests and another with the outputs 
 identified by `{inputs_version, outputs_version}`. The entire stack with be on your default VPC that is created for every 
 zones when you open an account.
+Suppose that model's consumers need to use differents version the model because not all service would like to use the last model's version,
+this infra allows scale up each model independent. 
 
-## Requirements
+## Main Requirements
+The requeriments described here is to setup a cluster in AWS, but for others minor tasks the requeriments will be given in each section.
 
-#### 1. Have a AWS account
+### 1. Have a AWS account
 Create a free account in [AWS](https://aws.amazon.com/) under the free tier.
  
-#### 2. Local Virtual Machine
+### 2. Local Virtual Machine
 If don't hold a Linux please download and install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+
+This is required to build, use and manage docker, which is a way to package software to run anywhere.
  
 > **NOTE**: More informations can be found [here](https://docs.docker.com/machine/get-started/#prerequisite-information)
 
-#### 3. Docker
+### 3. Docker
 For MacOS:
 ```sh
 $ brew install docker
@@ -66,13 +72,13 @@ $ docker-machine ls
 ```
 
 > **NOTE**: More informations can be found [here](https://docs.docker.com/machine/reference/create/) and a blog post 
-explaining the interaction between docker and VM [here](http://www.macadamian.com/2017/01/24/docker-machine-basic-examples/)
+explaining the interaction between docker and VM can be found [here](http://www.macadamian.com/2017/01/24/docker-machine-basic-examples/)
 
 
 
-#### 4. AWS command line
+### 4. AWS command line
 In order to install AWS command line, you have to install first python and then you can install `awscli` through `pip`.
-Python's version is not important in this case but I would recommend use python3.
+Python's version is not important in this case but I would recommend use python3.6.2.
 
 For MacOS:
 ```sh 
@@ -95,7 +101,7 @@ $ brew install jq
 ### 1. Setup of environment variables
 In order to run this project you will need to setup some environment variables as AWS keys, user and password 
 . 
-The script below should be filled and saved in `secrets/env-variables.sh`. 
+The script below should be filled and saved in `/secrets/env-variables.sh`. 
 ```bash
 #!/usr/bin/env bash
 
@@ -118,7 +124,7 @@ You must load the the variables above before start running the project:
 ```sh
 $ . ./secrets/env-variables.sh
 ```
-If you don't have AWS key you can check [here](http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
+If you don't have AWS key you can check how to get it [here](http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
 
 
 ### 2. Bootstrap 
@@ -135,24 +141,25 @@ $ bash bootstrap.sh -r $DOCKER_REPOSITORY_NAME \
                     -u $DBMASTERUSER \
                     -p $DBPASSWORD
 ```
-The database creation cloud take some minutes, so just to the next step if the database creation is completed. You can check 
-the stack's status logging [here](https://console.aws.amazon.com/console/home) and then `services > cloudformation` 
-and wait until the `Status` become `CREATE_COMPLETE`. 
+The database creation might take some minutes, so just jump to the next step if the database creation is completed. 
+
+You can check the stack's status logging [here](https://console.aws.amazon.com/console/home) and then go to `services > cloudformation` 
+and wait until the `Status` of the stack `db-modelapp` become `CREATE_COMPLETE`. 
 
 The requirements to run it are `{1, 4, 5}`. 
 
 
 ### 3. Deploying your application
 
-Make sure that your VM is running or run:
+Make sure that your VM is running or run it to start the VM:
 ```sh
 $ docker-machine start default
 ```
 
 The script below will:
-- Check if there is already a docker image or a stack with the current version. The version will be extracted from the file `VERSION`,
+- Check if there is already a docker image or a stack with the current version. The version will be extracted from the `VERSION` file,
 so if there is already this version deployed you can either update the version or run `revert-deploy.sh`
-- Build a docker image with all the dependencies of your application
+- Build a docker image and package all the dependencies of your application
 - Push this image created to the repository previously created in `bootstrap.sh`
 - Create a stack with a cluster of machines running the service specified in the pushed docker image using the receipt `cf-ecs-cluster.json`
 
@@ -163,18 +170,30 @@ $ bash deploy-it.sh -r $DOCKER_REPOSITORY_NAME \
                     -u $DBMASTERUSER \
                     -p $DBPASSWORD
 ```
-If you made some change in the code of your application, for instance, included one variable more you should fix the tests, bump the `VERSION` and run `deploy-it.sh` again.
+If you made some change in the code of your application, for instance, you included one variable more then you should fix the tests, 
+bump the `VERSION` and then `deploy-it.sh` again.
 
 The dependencies required to run it are `{1, 2, 3, 4, 5}`.
 
 ### 4. Getting Endpoint (DNS)
+Get the URL or endpoint of your application.
 ```sh 
 $ aws cloudformation describe-stacks --stack-name modelapp-`cat VERSION` | jq '.Stacks[].Outputs[].OutputValue'
 ```
 
-
+## How to user your stack
 ### Sending requests to the application
-WIP 
+To make requests you'll need install python3.5 or greater and then install the library `requests`:
+```sh
+$ pip3 install requests==2.18.4
+```
+and then run you can run the script to make requests:
+```sh
+
+$ bash resources/populate_db.sh http://my-endpoint/
+```
+If you are running locally (non-dockerized or dockerized), the endpoint should be `localhost:8080/run/`.
+If you are running in AWS, get the endpoint in the step 4 in Step.
 
 
 ### Running the application adhoc
@@ -199,6 +218,12 @@ If you made some changes in the model and would like to train and run to test:
 ```sh
 $ bash adhoc-train-and-run.sh
 ```
+
+### Trainning and running the application adhoc
+```sh
+$ bash adhoc-train-and-run.sh
+```
+
 
 ### Running tests
 ```sh
@@ -230,6 +255,4 @@ The requirements to run it are `{1, 4, 5}` and `psql`.
 ## TODOs
 - Decrease timeouts of ELB in `cf-ecs-cluster.sh`, something is happening there
 - Better way to pass DBSecurityGroup to cloudformation, query instead of fix it
-- Write `/resources/populate-db.sh`
-- Script to retrain the model dockerized
 - Autoscaling's Criteria 
