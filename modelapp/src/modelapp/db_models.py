@@ -11,7 +11,7 @@ def serialize(d, keys):
 
 
 class Inputs(db.Model):
-    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, "../../../..")), 'VERSION')).read()
+    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'VERSION')).read()
     __tablename__ = 'inputs_{}'.format(version_model)
     __table_args__ = (schema.UniqueConstraint('id', 'request_time', name='id_request_time'),)
 
@@ -31,7 +31,7 @@ class Inputs(db.Model):
 
 
 class Outputs(db.Model):
-    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, "../../../..")), 'VERSION')).read()
+    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'VERSION')).read()
     __tablename__ = 'outputs_{}'.format(version_model)
 
     run_id = db.Column(db.Integer,

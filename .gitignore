@@ -103,6 +103,7 @@ notes
 *.pem
 env-variables.sh
 /modelapp-python-env/
+/resources/model/*_test.pkl
 *.gdraw
 *.ipynb
 

@@ -76,5 +76,3 @@ aws cloudformation create-stack --template-body file://cf-ecs-cluster.json \
                                              ParameterKey=DBSecurityGroup,ParameterValue=rds-launch-wizard \
                                              ParameterKey=AMIImageId,ParameterValue=${AMI_ID} \
                                              ParameterKey=ImageECRId,ParameterValue=${DOCKER_REPOSITORY_PATH}
-
-# TODO: better way to pass DBSecurityGroup to cloudformation, query instead of fix it

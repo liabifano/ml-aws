@@ -92,7 +92,7 @@ $ brew install jq
 
 ## Step by step
 
-#### 1. Setup of environment variables
+### 1. Setup of environment variables
 In order to run this project you will need to setup some environment variables as AWS keys, user and password 
 . 
 The script below should be filled and saved in `secrets/env-variables.sh`. 
@@ -121,7 +121,7 @@ $ . ./secrets/env-variables.sh
 If you don't have AWS key you can check [here](http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
 
 
-#### 2. Bootstrap 
+### 2. Bootstrap 
 To run the Flask application, we will need to:
 - Create a repository to store the docker images with the application and its dependencies
 - Create a key-value pair to enable access to the cluster's machine, this key will be download to the folder `secrets/modelapp-key.pem`
@@ -142,7 +142,7 @@ and wait until the `Status` become `CREATE_COMPLETE`.
 The requirements to run it are `{1, 4, 5}`. 
 
 
-#### 3. Deploying your application
+### 3. Deploying your application
 
 Make sure that your VM is running or run:
 ```sh
@@ -167,24 +167,24 @@ If you made some change in the code of your application, for instance, included 
 
 The dependencies required to run it are `{1, 2, 3, 4, 5}`.
 
-#### 4. Getting Endpoint (DNS)
+### 4. Getting Endpoint (DNS)
 ```sh 
 $ aws cloudformation describe-stacks --stack-name modelapp-`cat VERSION` | jq '.Stacks[].Outputs[].OutputValue'
 ```
 
 
-#### Sending requests to the application
+### Sending requests to the application
 WIP 
 
 
-#### Running the application adhoc
+### Running the application adhoc
 Sometimes is painful spin a stack just to run some tests or retrain your model. 
 There are two ways that you can test your application, the first one is activate the virtualenv and then running the application
 and the other is building the docker image and running the container with the application.
 
 The first option:
 ```sh
-$ bash /modelapp/bootstrap-python-env.sh
+$ bash modelapp/bootstrap-python-env.sh
 $ . modelapp-python-env/bin/activate 
 $ python3 modelapp/src/modelapp/manage.py runserver --host 0.0.0.0  --port=8080
 ```
@@ -195,14 +195,19 @@ $ docker run -it -p 8080:8080 mytest
 ``` 
 to check if they are actually running `curl localhost:8080` should return `200`.
 
-#### Running tests
+If you made some changes in the model and would like to train and run to test:
 ```sh
-$ bash /modelapp/bootstrap-python-env.sh
+$ bash adhoc-train-and-run.sh
+```
+
+### Running tests
+```sh
+$ bash modelapp/bootstrap-python-env.sh
 $ . modelapp-python-env/bin/activate 
 $ py.test
 ```
 
-#### Reverting a deployed version
+### Reverting a deployed version
 In order to revert the deploy of some buggy code it will need install one more dependency to delete the tables created 
 (`psql`). For MacOS:
 ```sh
@@ -225,7 +230,6 @@ The requirements to run it are `{1, 4, 5}` and `psql`.
 ## TODOs
 - Decrease timeouts of ELB in `cf-ecs-cluster.sh`, something is happening there
 - Better way to pass DBSecurityGroup to cloudformation, query instead of fix it
-- A real predictive model
 - Write `/resources/populate-db.sh`
 - Script to retrain the model dockerized
 - Autoscaling's Criteria 

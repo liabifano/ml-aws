@@ -1,5 +1,9 @@
 import os
 
+RESOURCES_PATH = os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'resources', 'model')
+MODEL_PATH = os.path.join(RESOURCES_PATH, 'trained_model.pkl')
+FEATURES_MODEL = ['sepal_length', 'sepal_width', 'pental_length', 'pental_width']
+
 
 class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False

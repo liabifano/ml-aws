@@ -1,14 +1,14 @@
 import os
-import pandas as pd
 
 from flask import request, Blueprint
 from flask_api import status
 from flask_jsontools import jsonapi
 import pkg_resources
 from datetime import datetime
+from sklearn.externals import joblib
 
 from modelapp.db_models import db, serialize, Inputs, Outputs
-from modelapp import model, adapters
+from modelapp import predict, adapters, config
 
 mod = Blueprint('endpoints', __name__)
 
@@ -21,7 +21,7 @@ def home():
 @mod.route('/version/', methods=['GET'])
 @jsonapi
 def version():
-    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, "../../../..")), 'VERSION')).read()
+    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'VERSION')).read()
     version_code = pkg_resources.require('modelapp')[0].version
     return '{}-{}'.format(version_model, version_code)
 
@@ -51,14 +51,16 @@ def run():
 
     try:
         df = adapters.json_to_df(request_json)
-        score = model.predict(df)
+        X = df[config.FEATURES_MODEL].values
+        trained_model = joblib.load(config.MODEL_PATH)
+        result = predict.predictor(X, trained_model)
     except:
         RuntimeError('Not able to score to {}'.format(request_json['id']))
 
     inputs = Inputs(**df.to_dict('records')[0])
     outputs = Outputs(id=request_json['id'],
                       finished_at=datetime.utcnow(),
-                      output=score,
+                      output=result,
                       code_version=pkg_resources.require('modelapp')[0].version)
 
 

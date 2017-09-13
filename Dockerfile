@@ -7,12 +7,13 @@ RUN python3 -m pip install wheel
 RUN python3 -m pip install virtualenv==15.1.0
 
 COPY modelapp/ /modelapp/
+COPY resources/model/ resources/model/
 COPY VERSION VERSION
 
 # create virtualenv
 RUN bash /modelapp/bootstrap-python-env.sh
 
-# run tests
+# run unit tests
 RUN find . | grep -E "(__pycache__|\.pyc$)" | xargs rm -rf && \
     . /modelapp-python-env/bin/activate && \
     cd modelapp/ && py.test
