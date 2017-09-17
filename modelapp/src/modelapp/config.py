@@ -1,7 +1,8 @@
 import os
 
+MODEL_VERSION = open(os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'VERSION')).read()
 RESOURCES_PATH = os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'resources', 'model')
-MODEL_PATH = os.path.join(RESOURCES_PATH, 'trained_model.pkl')
+MODEL_PATH = os.path.join(RESOURCES_PATH, 'trained_model_{}.pkl'.format(MODEL_VERSION))
 FEATURES_MODEL = ['sepal_length', 'sepal_width', 'pental_length', 'pental_width']
 
 

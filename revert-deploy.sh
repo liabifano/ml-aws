@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-while getopts ":r:d:u:v:" opt; do
+while getopts ":r:d:p:u:v:" opt; do
   case $opt in
     r) DOCKER_REPOSITORY_NAME="$OPTARG";;
     d) DB_NAME="$OPTARG";;
@@ -12,6 +12,7 @@ while getopts ":r:d:u:v:" opt; do
     ;;
   esac
 done
+
 
 STACK_NAME=modelapp-${VERSION}
 

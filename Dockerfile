@@ -1,6 +1,4 @@
-FROM python:3
-
-EXPOSE 8080
+FROM python:3.6.2
 
 RUN python3 -m pip install pip --upgrade
 RUN python3 -m pip install wheel
@@ -18,6 +16,8 @@ RUN find . | grep -E "(__pycache__|\.pyc$)" | xargs rm -rf && \
     . /modelapp-python-env/bin/activate && \
     cd modelapp/ && py.test
 
+
 # run application
-CMD . modelapp-python-env/bin/activate && \
-    python3 modelapp/src/modelapp/manage.py runserver --host 0.0.0.0  --port=8080
+WORKDIR /modelapp/src/modelapp
+CMD . ../../../modelapp-python-env/bin/activate && \
+    gunicorn --bind 0.0.0.0:8080 -k eventlet manage:app

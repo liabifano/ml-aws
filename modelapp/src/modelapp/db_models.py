@@ -3,6 +3,8 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect, schema
 
+from modelapp import config
+
 db = SQLAlchemy()
 
 
@@ -11,9 +13,8 @@ def serialize(d, keys):
 
 
 class Inputs(db.Model):
-    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'VERSION')).read()
-    __tablename__ = 'inputs_{}'.format(version_model)
-    __table_args__ = (schema.UniqueConstraint('id', 'request_time', name='id_request_time'),)
+    __tablename__ = 'inputs_{}'.format(config.MODEL_VERSION)
+    __table_args__ = (schema.UniqueConstraint('id', 'request_time', name='id_request_time_{}'.format(config.MODEL_VERSION)),)
 
     run_id = db.Column(db.Integer(), primary_key=True, nullable=False, autoincrement=True)
     id = db.Column(db.String, nullable=False)
@@ -31,11 +32,10 @@ class Inputs(db.Model):
 
 
 class Outputs(db.Model):
-    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'VERSION')).read()
-    __tablename__ = 'outputs_{}'.format(version_model)
+    __tablename__ = 'outputs_{}'.format(config.MODEL_VERSION)
 
     run_id = db.Column(db.Integer,
-                       db.ForeignKey('inputs_{}.run_id'.format(version_model)),
+                       db.ForeignKey('inputs_{}.run_id'.format(config.MODEL_VERSION)),
                        primary_key=True)
     id = db.Column(db.String, nullable=False)
     finished_at = db.Column(db.DateTime, nullable=False)

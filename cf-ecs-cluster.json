@@ -54,10 +54,10 @@
         }],
         "HealthCheck": {
           "HealthyThreshold": "2",
-          "Interval": "60",
+          "Interval": "10",
           "Target": "HTTP:8080/",
-          "Timeout": "30",
-          "UnhealthyThreshold": "10"
+          "Timeout": "5",
+          "UnhealthyThreshold": "6"
         }
       }
     },
@@ -70,13 +70,9 @@
           "IpProtocol": "tcp",
           "FromPort": "8080",
           "ToPort": "8080",
-          "CidrIp": "0.0.0.0/0"
+          "SourceSecurityGroupOwnerId": {"Fn::GetAtt": ["ServiceELB", "SourceSecurityGroup.OwnerAlias"]},
+          "SourceSecurityGroupName": {"Fn::GetAtt" : ["ServiceELB", "SourceSecurityGroup.GroupName"]}
         }, {
-          "IpProtocol": "tcp",
-          "FromPort": "5000",
-          "ToPort": "5000",
-          "CidrIp": "0.0.0.0/0"
-        },{
           "IpProtocol": "tcp",
           "FromPort": "5432",
           "ToPort": "5432",

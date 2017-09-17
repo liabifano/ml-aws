@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 while getopts ":r:k:d:u:p:" opt; do
   case $opt in
@@ -14,16 +14,18 @@ while getopts ":r:k:d:u:p:" opt; do
 done
 
 VERSION=`cat VERSION`
+THIS_PATH=$(dirname `realpath $0`)
+STACK_NAME=modelapp-${VERSION}
 DOCKER_PREFIX=$(aws ecr get-login --no-include-email | awk 'match($0, /https*/) {print substr($0, RSTART+8)}')
 DOCKER_REPOSITORY_PATH=${DOCKER_PREFIX}/${DOCKER_REPOSITORY_NAME}:${VERSION}
-STACK_NAME=modelapp-${VERSION}
 
 echo "--------------------------------------------------------------------------------------------------------"
 echo "This script will: "
 echo "  1. Check if there is already a docker image or a stack with the current version"
-echo "  2. Build a docker image with all the dependencies of your application"
-echo "  3. Push this image created to the repository previously created in bootstrap.sh"
-echo "  4. Create a stack with a cluster of machines running the service specified in the pushed docker image"
+echo "  2. Train the model and save the model's output in resourses/model"
+echo "  3. Build a docker image with all the dependencies of your application"
+echo "  4. Push this image created to the repository previously created in bootstrap.sh"
+echo "  5. Create a stack with a cluster of machines running the service specified in the pushed docker image"
 echo "--------------------------------------------------------------------------------------------------------"
 
 echo
@@ -42,6 +44,15 @@ if [[ ! -z $(aws cloudformation describe-stacks \
         echo "The stack ${STACK_NAME} has already been created, please bump your version or run deploy.sh";
         exit 1
 fi
+
+
+
+echo
+echo "Train model version ${VERSION}"
+echo "---------------------------------------------------------------------------------"
+bash ${THIS_PATH}/modelapp/bootstrap-python-env.sh && \
+. ${THIS_PATH}/modelapp-python-env/bin/activate && \
+python3 ${THIS_PATH}/modelapp/src/modelapp/train.py
 
 echo
 echo "Building the image ${DOCKER_REPOSITORY_PATH}"

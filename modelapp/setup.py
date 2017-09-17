@@ -20,7 +20,9 @@ setup(name='modelapp',
           'Flask-SQLAlchemy==2.2',
           'flask-jsontools==0.1.1.post0',
           'Flask-API==0.7.1',
-          'Flask-Login==0.4.0'
+          'Flask-Login==0.4.0',
+          'gunicorn==19.7.1',
+          'eventlet==0.21.0'
       ],
       include_package_data=True,
       zip_safe=False)

@@ -8,7 +8,7 @@ def train():
 
     iris = datasets.load_iris()
     X, y = iris.data, iris.target
-    clf = svm.SVC(gamma=0.001, C=100.)
+    clf = svm.SVC(gamma=0.01, C=100.)
     clf.fit(X, y)
     joblib.dump(clf, config.MODEL_PATH, compress=9)
 
