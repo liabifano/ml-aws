@@ -58,5 +58,5 @@ fi
 
 echo "----------------------------------------------------------"
 echo
-echo ">>> The next step is to run train-and-deploy-it.sh or retrain.sh"
+echo ">>> The next step is to run train-and-deploy-it.sh"
 echo "----------------------------------------------------------"

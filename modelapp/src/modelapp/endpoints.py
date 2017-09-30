@@ -1,5 +1,3 @@
-import os
-
 from flask import request, Blueprint
 from flask_api import status
 from flask_jsontools import jsonapi
@@ -21,7 +19,7 @@ def home():
 @mod.route('/version/', methods=['GET'])
 @jsonapi
 def version():
-    version_model = open(os.path.join(os.path.abspath(os.path.join(__file__, '../../../..')), 'VERSION')).read()
+    version_model = config.MODEL_VERSION
     version_code = pkg_resources.require('modelapp')[0].version
     return '{}-{}'.format(version_model, version_code)
 

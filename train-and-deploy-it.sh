@@ -13,7 +13,7 @@ while getopts ":r:k:d:u:p:" opt; do
   esac
 done
 
-VERSION=`cat VERSION`
+VERSION=`cat modelapp/VERSION`
 THIS_PATH=$(dirname `realpath $0`)
 STACK_NAME=modelapp-${VERSION}
 DOCKER_PREFIX=$(aws ecr get-login --no-include-email | awk 'match($0, /https*/) {print substr($0, RSTART+8)}')
@@ -82,7 +82,9 @@ AMI_ID=$(aws ec2 describe-images --owners amazon --filters Name=root-device-type
 
 aws cloudformation create-stack --template-body file://cf-ecs-cluster.json \
                                 --stack-name $STACK_NAME  \
-                                --parameters ParameterKey=KeyName,ParameterValue=${KEY_VALUE_PAIR} \
+                                --parameters ParameterKey=ClusterSize,ParameterValue="1" \
+                                             ParameterKey=ClusterInstanceType,ParameterValue="t2.micro" \
+                                             ParameterKey=KeyName,ParameterValue=${KEY_VALUE_PAIR} \
                                              ParameterKey=DBHost,ParameterValue=${DB_HOST} \
                                              ParameterKey=DBSecurityGroup,ParameterValue=rds-launch-wizard \
                                              ParameterKey=AMIImageId,ParameterValue=${AMI_ID} \
