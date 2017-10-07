@@ -53,7 +53,7 @@ def run():
         trained_model = joblib.load(config.MODEL_PATH)
         result = predict.predictor(X, trained_model)
     except:
-        RuntimeError('Not able to score to {}'.format(request_json['id']))
+        raise RuntimeError('Unable score {}'.format(request_json['id']))
 
     inputs = Inputs(**df.to_dict('records')[0])
     outputs = Outputs(id=request_json['id'],
